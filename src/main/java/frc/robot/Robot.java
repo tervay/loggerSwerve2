@@ -12,7 +12,9 @@ import org.littletonrobotics.junction.io.LogSocketServer;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.swerve.Swerve;
@@ -38,6 +40,7 @@ public class Robot extends LoggedRobot {
   Swerve swerve;
 
   Module module;
+  Timer timer = new Timer();
 
   /**
    * This function is run when the robot is first started up and should be used
@@ -62,7 +65,8 @@ public class Robot extends LoggedRobot {
       Logger.getInstance().addDataReceiver(new ByteLogReceiver("logs/"));
     }
 
-    Logger.getInstance().addDataReceiver(new LogSocketServer(5800)); // Provide log data over the network, viewable in Advantage Scope.
+    Logger.getInstance().addDataReceiver(new LogSocketServer(5800)); // Provide log data over the network, viewable in
+                                                                     // Advantage Scope.
     Logger.getInstance().start();
 
     module = new Module(new ModuleIOSim(Constants.kFrontLeftModuleConfig));
@@ -111,11 +115,17 @@ public class Robot extends LoggedRobot {
     }
 
     module.setDesiredState(new SwerveModuleState(1.0, Rotation2d.fromDegrees(45)));
+    timer.start();
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
+    if (timer.get() > 3) {
+      // module.setDesiredState(new SwerveModuleState(3.0, Rotation2d.fromDegrees(-60)));
+      timer.reset();
+      timer.stop();
+    }
   }
 
   @Override

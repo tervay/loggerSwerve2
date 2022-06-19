@@ -12,7 +12,7 @@ public interface ModuleIO {
     public static class ModuleIOInputs {
         public double wheelPositionMeters = 0;
         public double wheelVelocityMetersPerSec = 0;
-        public double azimuthEncoderPositionRads = 0;
+        public double azimuthEncoderPositionDeg = 0;
     }
 
     public void updateInputs(ModuleIOInputs inputs);

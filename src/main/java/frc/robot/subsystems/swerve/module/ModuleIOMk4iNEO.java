@@ -25,11 +25,11 @@ public class ModuleIOMk4iNEO implements ModuleIO {
         azimuthEncoder = azimuthMotor.getAnalog(Mode.kAbsolute);
         azimuthMotor.getPIDController().setFeedbackDevice(azimuthEncoder);
 
-        wheelMotor.getEncoder().setPositionConversionFactor((1.0 / 6.14) * Units.inchesToMeters(4) * Math.PI);
-        wheelMotor.getEncoder().setVelocityConversionFactor((1.0 / 6.14) * Units.inchesToMeters(4) * Math.PI / 60.0);
+        wheelMotor.getEncoder().setPositionConversionFactor((1.0 / 6.12) * Units.inchesToMeters(4) * Math.PI);
+        wheelMotor.getEncoder().setVelocityConversionFactor((1.0 / 6.12) * Units.inchesToMeters(4) * Math.PI / 60.0);
 
-        azimuthEncoder.setPositionConversionFactor((Math.PI * 2.0) * 7.0 / 150.0);
-        azimuthEncoder.setVelocityConversionFactor((Math.PI * 2.0) * (7.0 / 150.0) / 60.0);
+        azimuthEncoder.setPositionConversionFactor(7.0 / 150.0);
+        azimuthEncoder.setVelocityConversionFactor((7.0 / 150.0) / 60.0);
 
         wheelMotor.setSmartCurrentLimit(50);
         azimuthMotor.setSmartCurrentLimit(50);
@@ -37,7 +37,7 @@ public class ModuleIOMk4iNEO implements ModuleIO {
 
     @Override
     public void updateInputs(ModuleIOInputs inputs) {
-        inputs.azimuthEncoderPositionRads = azimuthEncoder.getPosition();
+        inputs.azimuthEncoderPositionDeg = azimuthEncoder.getPosition();
         inputs.wheelPositionMeters = wheelMotor.getEncoder().getPosition();
     }
 
