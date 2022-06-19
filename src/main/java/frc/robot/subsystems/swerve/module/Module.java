@@ -2,6 +2,7 @@ package frc.robot.subsystems.swerve.module;
 
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -21,7 +22,7 @@ public class Module extends SubsystemBase {
     SwerveModuleState desiredState = new SwerveModuleState();
 
     // Gains are for example purposes only - must be determined for your own robot!
-    private final PIDController m_drivePIDController = new PIDController(1, 0, 0);
+    private final PIDController m_drivePIDController = new PIDController(5, 0, 0);
 
     // Gains are for example purposes only - must be determined for your own robot!
     private final ProfiledPIDController m_turningPIDController = new ProfiledPIDController(
@@ -64,14 +65,14 @@ public class Module extends SubsystemBase {
 
         final double turnFeedforward = m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
 
-        Logger.getInstance().recordOutput("Module (" + io.getConfig().getName() + ") wheel volts",
-                driveOutput + driveFeedforward);
+        double wheelVolts = MathUtil.clamp(driveOutput + driveFeedforward, -12, 12);
+        double azimuthVolts = MathUtil.clamp(turnOutput + turnFeedforward, -12, 12);
 
-        Logger.getInstance().recordOutput("Module (" + io.getConfig().getName() + ") azimuth volts",
-                turnOutput + turnFeedforward);
+        Logger.getInstance().recordOutput("Module (" + io.getConfig().getName() + ") wheel volts", wheelVolts);
+        Logger.getInstance().recordOutput("Module (" + io.getConfig().getName() + ") azimuth volts", azimuthVolts);
 
-        io.setWheelVolts(driveOutput + driveFeedforward);
-        io.setAzimuthVolts(turnOutput + turnFeedforward);
+        io.setWheelVolts(wheelVolts);
+        io.setAzimuthVolts(azimuthVolts);
     }
 
     public ModuleConfig getConfig() {

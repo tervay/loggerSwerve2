@@ -57,7 +57,11 @@ public class Robot extends LoggedRobot {
     // .build());
 
     LoggedNetworkTables.getInstance().addTable("/SmartDashboard");
-    Logger.getInstance().addDataReceiver(new ByteLogReceiver("logs/")); // Log to USB stick (name will be selected automatically)
+
+    if (isReal()) {
+      Logger.getInstance().addDataReceiver(new ByteLogReceiver("logs/"));
+    }
+
     Logger.getInstance().addDataReceiver(new LogSocketServer(5800)); // Provide log data over the network, viewable in Advantage Scope.
     Logger.getInstance().start();
 

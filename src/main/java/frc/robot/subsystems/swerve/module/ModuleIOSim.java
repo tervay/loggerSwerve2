@@ -26,8 +26,10 @@ public class ModuleIOSim implements ModuleIO {
 
     @Override
     public void updateInputs(ModuleIOInputs inputs) {
-        wheelSim.update(0.02);
-        azimuthSim.update(0.02);
+        for (int i = 0; i < 20; i++) {
+            wheelSim.update(0.001);
+            azimuthSim.update(0.001);
+        }
 
         inputs.wheelPositionMeters = wheelSim.getAngularVelocityRPM()
                 * Math.PI
