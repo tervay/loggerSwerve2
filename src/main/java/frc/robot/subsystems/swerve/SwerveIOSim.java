@@ -1,5 +1,6 @@
 package frc.robot.subsystems.swerve;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.simulation.AnalogGyroSim;
 
@@ -14,7 +15,7 @@ public class SwerveIOSim implements SwerveIO {
     }
 
     @Override
-    public void resetGyro() {
+    public void resetGyro(Rotation2d rot) {
         gyro.reset();
     }
 }

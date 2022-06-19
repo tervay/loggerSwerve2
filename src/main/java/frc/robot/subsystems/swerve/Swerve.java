@@ -16,7 +16,7 @@ import frc.robot.subsystems.swerve.module.ModuleContainer;
 
 public class Swerve extends SubsystemBase {
     private final SwerveIO io;
-    private final SwerveIOInputs inputs = new SwerveIOInputs();
+    private final SwerveIOInputsAutoLogged inputs = new SwerveIOInputsAutoLogged();
     ModuleContainer modules;
     private final double kMaxSpeed = Units.feetToMeters(16);
 
@@ -31,7 +31,7 @@ public class Swerve extends SubsystemBase {
                 modules.getFrontLeft().getConfig().getLocation(), modules.getFrontRight().getConfig().getLocation(),
                 modules.getBackLeft().getConfig().getLocation(), modules.getBackRight().getConfig().getLocation());
 
-        io.resetGyro();
+        io.resetGyro(new Rotation2d());
         io.updateInputs(inputs);
         odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(inputs.gyroHeadingRad));
     }
@@ -72,15 +72,23 @@ public class Swerve extends SubsystemBase {
 
     public void setPose(Pose2d pose) {
         odometry.resetPosition(pose, pose.getRotation());
+        io.resetGyro(pose.getRotation());
     }
 
     public SwerveDriveKinematics getKinematics() {
         return kinematics;
     }
 
+    public ModuleContainer getModules() {
+        return modules;
+    }
+
     public void periodic() {
         io.updateInputs(inputs);
+        Logger.getInstance().processInputs("Swerve", inputs);
+        var oldPose = odometry.getPoseMeters();
         updateOdometry();
+        io.updateSimGyro(odometry.getPoseMeters(), oldPose);
         Logger.getInstance().recordOutput("Odometry", new double[] {
                 getPose().getX(),
                 getPose().getY(),

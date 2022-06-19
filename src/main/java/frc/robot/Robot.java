@@ -5,6 +5,7 @@
 package frc.robot;
 
 import java.util.List;
+import java.util.function.Function;
 
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.commands.PPSwerveControllerCommand;
@@ -22,6 +23,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
@@ -30,6 +32,8 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -58,7 +62,7 @@ public class Robot extends LoggedRobot {
   PIDController xController = new PIDController(.1, 0, 0);
   PIDController yController = new PIDController(.1, 0, 0);
   ProfiledPIDController thetaController = new ProfiledPIDController(0, 0, 0,
-      new TrapezoidProfile.Constraints(Units.feetToMeters(15), Units.feetToMeters(10)));
+      new TrapezoidProfile.Constraints(Math.PI, Math.PI));
   HolonomicDriveController holonomicDriveController = new HolonomicDriveController(xController, yController,
       thetaController);
 
@@ -102,8 +106,7 @@ public class Robot extends LoggedRobot {
       Logger.getInstance().addDataReceiver(new ByteLogReceiver("logs/"));
     }
 
-    Logger.getInstance().addDataReceiver(new LogSocketServer(5800)); // Provide log data over the network, viewable in
-                                                                     // Advantage Scope.
+    Logger.getInstance().addDataReceiver(new LogSocketServer(5800));
     Logger.getInstance().start();
 
     // module = new Module(new ModuleIOSim(Constants.kFrontLeftModuleConfig));
@@ -178,7 +181,7 @@ public class Robot extends LoggedRobot {
     // }
     // }, swerve);
 
-    var t = PathPlanner.loadPath("Test", 3, 3);
+    var t = PathPlanner.loadPath("Test", 10, 3);
     swerve.setPose(t.getInitialPose());
 
     m_autonomousCommand = new PPSwerveControllerCommand(
@@ -236,5 +239,15 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {
+    Function<Module, Double> f = (module) -> {
+      return Math.abs(module.getInputs().wheelCurrentAmps) + Math.abs(module.getInputs().azimuthCurrentAmps);
+    };
+
+    RoboRioSim.setVInVoltage(
+        BatterySim.calculateDefaultBatteryLoadedVoltage(
+            f.apply(swerve.getModules().getFrontLeft()),
+            f.apply(swerve.getModules().getFrontRight()),
+            f.apply(swerve.getModules().getBackLeft()),
+            f.apply(swerve.getModules().getBackRight())));
   }
 }

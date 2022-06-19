@@ -4,6 +4,9 @@ import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+
 public interface SwerveIO {
 
     @AutoLog
@@ -13,5 +16,8 @@ public interface SwerveIO {
 
     public void updateInputs(SwerveIOInputs inputs);
 
-    public void resetGyro();
+    public void resetGyro(Rotation2d rot);
+
+    public default void updateSimGyro(Pose2d currentPose, Pose2d previousPose) {
+    }
 }

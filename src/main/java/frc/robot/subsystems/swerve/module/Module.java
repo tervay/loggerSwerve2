@@ -13,6 +13,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.swerve.module.ModuleIO.ModuleIOInputs;
 
 public class Module extends SubsystemBase {
 
@@ -44,6 +45,10 @@ public class Module extends SubsystemBase {
         this.desiredState = desiredState;
         Logger.getInstance().recordOutput("Modules/" + io.getConfig().getName() + "/desired state speed",
                 desiredState.speedMetersPerSecond);
+    }
+
+    public ModuleIOInputs getInputs() {
+        return inputs;
     }
 
     private void updateFromDesiredState() {

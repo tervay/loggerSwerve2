@@ -1,9 +1,11 @@
 package frc.robot.subsystems.swerve.module;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
@@ -16,6 +18,7 @@ public class ModuleIOSim implements ModuleIO {
     FlywheelSim azimuthSim, wheelSim;
 
     double wheelLastVelocity;
+    double wheelVoltsCache, azimuthVoltsCache;
 
     public ModuleIOSim(ModuleConfig config) {
         this.config = config;
@@ -41,16 +44,28 @@ public class ModuleIOSim implements ModuleIO {
         inputs.wheelVelocityMetersPerSec = wheelSim.getAngularVelocityRPM() * Math.PI * Units.inchesToMeters(4) / 60;
         inputs.azimuthEncoderPositionDeg += Units.radiansToDegrees(azimuthSim.getAngularVelocityRadPerSec()) * 0.02;
         inputs.azimuthEncoderVelocityDegPerSec = Units.radiansToDegrees(azimuthSim.getAngularVelocityRadPerSec());
+        inputs.wheelMotorVelocityRPM = wheelSim.getAngularVelocityRPM();
+        inputs.azimuthMotorVelocityRPM = azimuthSim.getAngularVelocityRPM();
+        inputs.wheelVolts = wheelVoltsCache;
+        inputs.azimuthVolts = azimuthVoltsCache;
+        inputs.wheelCurrentAmps = wheelSim.getCurrentDrawAmps();
+        inputs.azimuthCurrentAmps = azimuthSim.getCurrentDrawAmps();
     }
 
     @Override
     public void setWheelVolts(double volts) {
-        wheelSim.setInputVoltage(volts);
+        wheelSim.setInputVoltage(
+                MathUtil.clamp(volts, -RobotController.getBatteryVoltage(), RobotController.getBatteryVoltage()));
+        wheelVoltsCache = MathUtil.clamp(volts, -RobotController.getBatteryVoltage(),
+                RobotController.getBatteryVoltage());
     }
 
     @Override
     public void setAzimuthVolts(double volts) {
-        azimuthSim.setInputVoltage(volts);
+        azimuthSim.setInputVoltage(
+                MathUtil.clamp(volts, -RobotController.getBatteryVoltage(), RobotController.getBatteryVoltage()));
+        azimuthVoltsCache = MathUtil.clamp(volts, -RobotController.getBatteryVoltage(),
+                RobotController.getBatteryVoltage());
     }
 
     @Override
