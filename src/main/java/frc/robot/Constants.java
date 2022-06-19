@@ -4,12 +4,67 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
+import frc.robot.subsystems.swerve.module.ModuleConfig;
+
 /**
- * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
- * constants. This class should not be used for any other purpose. All constants should be declared
+ * The Constants class provides a convenient place for teams to hold robot-wide
+ * numerical or boolean
+ * constants. This class should not be used for any other purpose. All constants
+ * should be declared
  * globally (i.e. public static). Do not put anything functional in this class.
  *
- * <p>It is advised to statically import this class (or one of its inner classes) wherever the
+ * <p>
+ * It is advised to statically import this class (or one of its inner classes)
+ * wherever the
  * constants are needed, to reduce verbosity.
  */
-public final class Constants {}
+public final class Constants {
+    private static final double kSquareChassisSize = Units.inchesToMeters(26);
+
+    public static final ModuleConfig kFrontLeftModuleConfig = ModuleConfig.builder()
+            .name("Front Left")
+            .driveMotorCANId(1)
+            .azimuthMotorCANid(2)
+            .drivingKP(1.0)
+            .drivingKS(1.0)
+            .drivingKV(1.0)
+            .azimuthKP(1.0)
+            .encoderOffset(1.0)
+            .location(new Translation2d(kSquareChassisSize / 2.0, kSquareChassisSize / 2.0))
+            .build();
+    public static final ModuleConfig kFrontRightModuleConfig = ModuleConfig.builder()
+            .name("Front Right")
+            .driveMotorCANId(3)
+            .azimuthMotorCANid(4)
+            .drivingKP(1.0)
+            .drivingKS(1.0)
+            .drivingKV(1.0)
+            .azimuthKP(1.0)
+            .encoderOffset(1.0)
+            .location(new Translation2d(kSquareChassisSize / 2.0, -kSquareChassisSize / 2.0))
+            .build();
+    public static final ModuleConfig kBackRightModuleConfig = ModuleConfig.builder()
+            .name("Back Right")
+            .driveMotorCANId(5)
+            .azimuthMotorCANid(6)
+            .drivingKP(1.0)
+            .drivingKS(1.0)
+            .drivingKV(1.0)
+            .azimuthKP(1.0)
+            .encoderOffset(1.0)
+            .location(new Translation2d(-kSquareChassisSize / 2.0, kSquareChassisSize / 2.0))
+            .build();
+    public static final ModuleConfig kBackLeftModuleConfig = ModuleConfig.builder()
+            .name("Back Left")
+            .driveMotorCANId(7)
+            .azimuthMotorCANid(8)
+            .drivingKP(1.0)
+            .drivingKS(1.0)
+            .drivingKV(1.0)
+            .azimuthKP(1.0)
+            .encoderOffset(1.0)
+            .location(new Translation2d(-kSquareChassisSize / 2.0, -kSquareChassisSize / 2.0))
+            .build();
+}

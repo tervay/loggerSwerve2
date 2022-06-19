@@ -4,6 +4,15 @@ plugins {
     id "io.freefair.lombok" version "6.4.3"
 }
 
+sourceSets {
+  main {
+    java {
+      srcDirs 'src/main/java'
+      srcDirs 'build/generated/sources/annotationProcessor/java/main'
+    }
+  }
+}
+
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
 
@@ -81,6 +90,8 @@ dependencies {
     simulationRelease wpi.sim.enableRelease()
 
     testImplementation 'junit:junit:4.13.1'
+
+    annotationProcessor "org.littletonrobotics.akit.junction:junction-autolog:1.8.0"
 }
 
 // Simulation configuration (e.g. environment variables).
