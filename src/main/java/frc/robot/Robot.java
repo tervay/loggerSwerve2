@@ -4,14 +4,24 @@
 
 package frc.robot;
 
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.inputs.LoggedNetworkTables;
+import org.littletonrobotics.junction.io.ByteLogReceiver;
+import org.littletonrobotics.junction.io.LogSocketServer;
+
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.swerve.Swerve;
-import frc.robot.subsystems.swerve.SwerveIOMK4iNEO;
+import frc.robot.subsystems.swerve.SwerveIOPigeon2;
 import frc.robot.subsystems.swerve.module.Module;
 import frc.robot.subsystems.swerve.module.ModuleContainer;
+import frc.robot.subsystems.swerve.module.ModuleIO;
 import frc.robot.subsystems.swerve.module.ModuleIOMk4iNEO;
+import frc.robot.subsystems.swerve.module.ModuleIOSim;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -22,10 +32,12 @@ import frc.robot.subsystems.swerve.module.ModuleIOMk4iNEO;
  * build.gradle file in the
  * project.
  */
-public class Robot extends TimedRobot {
+public class Robot extends LoggedRobot {
   private Command m_autonomousCommand;
 
   Swerve swerve;
+
+  Module module;
 
   /**
    * This function is run when the robot is first started up and should be used
@@ -34,14 +46,22 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    swerve = new Swerve(
-        new SwerveIOMK4iNEO(),
-        ModuleContainer.builder()
-            .frontLeft(new Module(new ModuleIOMk4iNEO(Constants.kFrontLeftModuleConfig)))
-            .frontRight(new Module(new ModuleIOMk4iNEO(Constants.kFrontRightModuleConfig)))
-            .backLeft(new Module(new ModuleIOMk4iNEO(Constants.kBackLeftModuleConfig)))
-            .backRight(new Module(new ModuleIOMk4iNEO(Constants.kBackRightModuleConfig)))
-            .build());
+    // swerve = new Swerve(
+    // new SwerveIOPigeon2(),
+    // ModuleContainer.builder()
+    // .frontLeft(new Module(new ModuleIOMk4iNEO(Constants.kFrontLeftModuleConfig)))
+    // .frontRight(new Module(new
+    // ModuleIOMk4iNEO(Constants.kFrontRightModuleConfig)))
+    // .backLeft(new Module(new ModuleIOMk4iNEO(Constants.kBackLeftModuleConfig)))
+    // .backRight(new Module(new ModuleIOMk4iNEO(Constants.kBackRightModuleConfig)))
+    // .build());
+
+    LoggedNetworkTables.getInstance().addTable("/SmartDashboard");
+    Logger.getInstance().addDataReceiver(new ByteLogReceiver("logs/")); // Log to USB stick (name will be selected automatically)
+    Logger.getInstance().addDataReceiver(new LogSocketServer(5800)); // Provide log data over the network, viewable in Advantage Scope.
+    Logger.getInstance().start();
+
+    module = new Module(new ModuleIOSim(Constants.kFrontLeftModuleConfig));
   }
 
   /**
@@ -85,6 +105,8 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
+
+    module.setDesiredState(new SwerveModuleState(1.0, Rotation2d.fromDegrees(45)));
   }
 
   /** This function is called periodically during autonomous. */

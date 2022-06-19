@@ -2,11 +2,11 @@ package frc.robot.subsystems.swerve;
 
 import com.ctre.phoenix.sensors.Pigeon2;
 
-public class SwerveIOMK4iNEO implements SwerveIO {
+public class SwerveIOPigeon2 implements SwerveIO {
 
     Pigeon2 gyro;
 
-    public SwerveIOMK4iNEO() {
+    public SwerveIOPigeon2() {
         gyro = new Pigeon2(0);
     }
 
