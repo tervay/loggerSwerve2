@@ -13,6 +13,7 @@ public interface ModuleIO {
         public double wheelPositionMeters = 0;
         public double wheelVelocityMetersPerSec = 0;
         public double azimuthEncoderPositionDeg = 0;
+        public double azimuthEncoderVelocityDegPerSec = 0;
     }
 
     public void updateInputs(ModuleIOInputs inputs);

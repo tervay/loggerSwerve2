@@ -4,21 +4,38 @@
 
 package frc.robot;
 
+import java.util.List;
+
+import com.pathplanner.lib.PathPlanner;
+import com.pathplanner.lib.commands.PPSwerveControllerCommand;
+
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggedNetworkTables;
 import org.littletonrobotics.junction.io.ByteLogReceiver;
 import org.littletonrobotics.junction.io.LogSocketServer;
 
+import edu.wpi.first.math.controller.HolonomicDriveController;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.SwerveIOPigeon2;
+import frc.robot.subsystems.swerve.SwerveIOSim;
 import frc.robot.subsystems.swerve.module.Module;
 import frc.robot.subsystems.swerve.module.ModuleContainer;
 import frc.robot.subsystems.swerve.module.ModuleIO;
@@ -35,12 +52,32 @@ import frc.robot.subsystems.swerve.module.ModuleIOSim;
  * project.
  */
 public class Robot extends LoggedRobot {
-  private Command m_autonomousCommand;
 
   Swerve swerve;
 
+  PIDController xController = new PIDController(.1, 0, 0);
+  PIDController yController = new PIDController(.1, 0, 0);
+  ProfiledPIDController thetaController = new ProfiledPIDController(0, 0, 0,
+      new TrapezoidProfile.Constraints(Units.feetToMeters(15), Units.feetToMeters(10)));
+  HolonomicDriveController holonomicDriveController = new HolonomicDriveController(xController, yController,
+      thetaController);
+
   Module module;
   Timer timer = new Timer();
+
+  // Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+  // List.of(new Pose2d(0, 0, new Rotation2d()),
+  // new Pose2d(2, 5, Rotation2d.fromDegrees(0)),
+  // new Pose2d(5, 5,
+  // Rotation2d.fromDegrees(0)),
+  // new Pose2d(1, 1,
+  // Rotation2d.fromDegrees(0))
+
+  // ),
+  // new TrajectoryConfig(Units.feetToMeters(15), Units.feetToMeters(15)));
+
+  // Trajectory trajectory = PathPlanner.
+  private Command m_autonomousCommand;
 
   /**
    * This function is run when the robot is first started up and should be used
@@ -69,7 +106,18 @@ public class Robot extends LoggedRobot {
                                                                      // Advantage Scope.
     Logger.getInstance().start();
 
-    module = new Module(new ModuleIOSim(Constants.kFrontLeftModuleConfig));
+    // module = new Module(new ModuleIOSim(Constants.kFrontLeftModuleConfig));
+
+    swerve = new Swerve(
+        new SwerveIOSim(),
+        ModuleContainer.builder()
+            .frontLeft(new Module(new ModuleIOSim(Constants.kFrontLeftModuleConfig)))
+            .frontRight(new Module(new ModuleIOSim(Constants.kFrontRightModuleConfig)))
+            .backLeft(new Module(new ModuleIOSim(Constants.kBackLeftModuleConfig)))
+            .backRight(new Module(new ModuleIOSim(Constants.kBackRightModuleConfig)))
+            .build());
+
+    // System.out.println(trajectory.getTotalTimeSeconds());
   }
 
   /**
@@ -97,6 +145,11 @@ public class Robot extends LoggedRobot {
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {
+    if (m_autonomousCommand != null) {
+      m_autonomousCommand.cancel();
+    }
+
+    swerve.drive(0, 0, 0);
   }
 
   @Override
@@ -109,23 +162,40 @@ public class Robot extends LoggedRobot {
    */
   @Override
   public void autonomousInit() {
+    timer.start();
+
+    // m_autonomousCommand = new RunCommand(() -> {
+    // ChassisSpeeds speeds = holonomicDriveController.calculate(
+    // swerve.getPose(),
+    // trajectory.sample(timer.get()),
+    // Rotation2d.fromDegrees(45));
+
+    // if (timer.get() > trajectory.getTotalTimeSeconds()) {
+    // swerve.drive(0, 0, 0);
+    // } else {
+    // swerve.drive(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond,
+    // speeds.omegaRadiansPerSecond);
+    // }
+    // }, swerve);
+
+    var t = PathPlanner.loadPath("Test", 3, 3);
+    swerve.setPose(t.getInitialPose());
+
+    m_autonomousCommand = new PPSwerveControllerCommand(
+        t, () -> swerve.getPose(), swerve.getKinematics(), xController, yController,
+        thetaController, (states) -> {
+          swerve.setStates(states);
+        }, swerve).andThen(() -> swerve.drive(0, 0, 0));
+
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
-
-    module.setDesiredState(new SwerveModuleState(1.0, Rotation2d.fromDegrees(45)));
-    timer.start();
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    if (timer.get() > 3) {
-      // module.setDesiredState(new SwerveModuleState(3.0, Rotation2d.fromDegrees(-60)));
-      timer.reset();
-      timer.stop();
-    }
   }
 
   @Override
@@ -137,6 +207,9 @@ public class Robot extends LoggedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+
+    swerve.drive(0, 0, 0);
+    // module.setDesiredState(new SwerveModuleState(3, Rotation2d.fromDegrees(45)));
   }
 
   /** This function is called periodically during operator control. */

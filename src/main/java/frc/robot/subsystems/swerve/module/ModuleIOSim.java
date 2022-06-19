@@ -20,9 +20,9 @@ public class ModuleIOSim implements ModuleIO {
     public ModuleIOSim(ModuleConfig config) {
         this.config = config;
         azimuthSim = new FlywheelSim(DCMotor.getNEO(1), 150.0 / 7.0,
-                1.0 / 12.0 * (Units.lbsToKilograms(120.0) / 4) * Units.inchesToMeters(1.5 * 1.5));
+                (1.0 / 12.0) * (Units.lbsToKilograms(120.0) / 4) * Units.inchesToMeters(1.5 * 1.5));
         wheelSim = new FlywheelSim(DCMotor.getNEO(1), 6.12,
-                (Units.lbsToKilograms(120.0) / 4) * Units.inchesToMeters(2 * 2));
+                (1.0 / 12.0) * (Units.lbsToKilograms(120.0) / 4) * Units.inchesToMeters(2 * 2));
     }
 
     @Override
@@ -32,14 +32,15 @@ public class ModuleIOSim implements ModuleIO {
             azimuthSim.update(0.001);
         }
 
-        inputs.wheelPositionMeters = wheelSim.getAngularVelocityRPM()
+        inputs.wheelPositionMeters += wheelSim.getAngularVelocityRPM()
                 * Math.PI
                 * Units.inchesToMeters(4)
                 * 0.02
                 / 60;
 
         inputs.wheelVelocityMetersPerSec = wheelSim.getAngularVelocityRPM() * Math.PI * Units.inchesToMeters(4) / 60;
-        inputs.azimuthEncoderPositionDeg = Units.radiansToDegrees(azimuthSim.getAngularVelocityRadPerSec()) * 0.02;
+        inputs.azimuthEncoderPositionDeg += Units.radiansToDegrees(azimuthSim.getAngularVelocityRadPerSec()) * 0.02;
+        inputs.azimuthEncoderVelocityDegPerSec = Units.radiansToDegrees(azimuthSim.getAngularVelocityRadPerSec());
     }
 
     @Override
