@@ -88,7 +88,7 @@ public class Swerve extends SubsystemBase {
         Logger.getInstance().processInputs("Swerve", inputs);
         var oldPose = odometry.getPoseMeters();
         updateOdometry();
-        io.updateSimGyro(odometry.getPoseMeters(), oldPose);
+        io.updateSimGyro(modules);
         Logger.getInstance().recordOutput("Odometry", new double[] {
                 getPose().getX(),
                 getPose().getY(),

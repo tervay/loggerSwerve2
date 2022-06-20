@@ -6,6 +6,7 @@ import org.littletonrobotics.junction.inputs.LoggableInputs;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import frc.robot.subsystems.swerve.module.ModuleContainer;
 
 public interface SwerveIO {
 
@@ -18,6 +19,6 @@ public interface SwerveIO {
 
     public void resetGyro(Rotation2d rot);
 
-    public default void updateSimGyro(Pose2d currentPose, Pose2d previousPose) {
+    public default void updateSimGyro(ModuleContainer modules) {
     }
 }
