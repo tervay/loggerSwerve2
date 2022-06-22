@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.commands.iPPSwerveControllerCommand;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.SwerveIOSim;
 import frc.robot.subsystems.swerve.module.Module;
@@ -165,10 +166,10 @@ public class Robot extends LoggedRobot {
     // }
     // }, swerve);
 
-    var t = PathPlanner.loadPath("xTune", 4.87, 4.5);
+    var t = PathPlanner.loadPath("Test", 4.87, 4.5);
     swerve.setPose(t.getInitialPose());
 
-    m_autonomousCommand = new PPSwerveControllerCommand(
+    m_autonomousCommand = new iPPSwerveControllerCommand(
         t, () -> swerve.getPose(), swerve.getKinematics(), xController, yController,
         thetaController, (states) -> {
           swerve.setStates(states);
