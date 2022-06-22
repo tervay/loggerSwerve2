@@ -24,6 +24,9 @@ public class Swerve extends SubsystemBase {
 
     private final SwerveDriveOdometry odometry;
 
+    private static final double xTuningGoal = 11;
+    private static final double yTuningGoal = 11;
+
     public Swerve(SwerveIO io, ModuleContainer modules) {
         this.io = io;
         this.modules = modules;
@@ -94,5 +97,7 @@ public class Swerve extends SubsystemBase {
                 getPose().getY(),
                 getPose().getRotation().getRadians(),
         });
+        Logger.getInstance().recordOutput("Swerve/X Tuning Error", xTuningGoal - odometry.getPoseMeters().getX());
+        Logger.getInstance().recordOutput("Swerve/Y Tuning Error", yTuningGoal - odometry.getPoseMeters().getY());        
     }
 }

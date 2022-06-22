@@ -43,8 +43,8 @@ public class Robot extends LoggedRobot {
 
   Swerve swerve;
 
-  PIDController xController = new PIDController(.1, 0, 0);
-  PIDController yController = new PIDController(.1, 0, 0);
+  PIDController xController = new PIDController(1.6, 0, 0);
+  PIDController yController = new PIDController(1.5, 0, 0);
   ProfiledPIDController thetaController = new ProfiledPIDController(0, 0, 0,
       new TrapezoidProfile.Constraints(Math.PI, Math.PI));
   HolonomicDriveController holonomicDriveController = new HolonomicDriveController(xController, yController,
@@ -165,7 +165,7 @@ public class Robot extends LoggedRobot {
     // }
     // }, swerve);
 
-    var t = PathPlanner.loadPath("Test", 10, 3);
+    var t = PathPlanner.loadPath("xTune", 4.87, 4.5);
     swerve.setPose(t.getInitialPose());
 
     m_autonomousCommand = new PPSwerveControllerCommand(
