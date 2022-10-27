@@ -1,6 +1,7 @@
 package frc.robot.subsystems.swerve.module;
 
 import edu.wpi.first.math.geometry.Translation2d;
+import frc.robot.PIDFFGains;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -16,18 +17,15 @@ public class ModuleConfig {
     @Getter
     @NonNull
     private Integer azimuthMotorCANid;
+
     @Getter
     @NonNull
-    private Double drivingKS;
+    private PIDFFGains azimuthGains;
+
     @Getter
     @NonNull
-    private Double drivingKV;
-    @Getter
-    @NonNull
-    private Double drivingKP;
-    @Getter
-    @NonNull
-    private Double azimuthKP;
+    private PIDFFGains drivingGains;
+
     @Getter
     @NonNull
     private Double encoderOffset;

@@ -13,6 +13,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.PIDFFController;
 import frc.robot.subsystems.swerve.module.ModuleIO.ModuleIOInputs;
 
 public class Module extends SubsystemBase {
@@ -23,17 +24,17 @@ public class Module extends SubsystemBase {
     SwerveModuleState desiredState = new SwerveModuleState();
 
     // Gains are for example purposes only - must be determined for your own robot!
-    private final PIDController m_drivePIDController = new PIDController(12, 0, 0);
+    private final PIDFFController drivingController;
 
     // Gains are for example purposes only - must be determined for your own robot!
-    private final PIDController m_turningPIDController = new PIDController(.08, 0, 0);
-
-    // Gains are for example purposes only - must be determined for your own robot!
-    private final SimpleMotorFeedforward m_driveFeedforward = new SimpleMotorFeedforward(0, 2.45);
+    private final PIDFFController azimuthController;
 
     public Module(ModuleIO io) {
         this.io = io;
-        m_turningPIDController.enableContinuousInput(-180, 180);
+        drivingController = new PIDFFController(io.getConfig().getDrivingGains());
+        azimuthController = new PIDFFController(io.getConfig().getAzimuthGains());
+
+        azimuthController.enableContinuousInput(-180, 180);
     }
 
     public SwerveModuleState getState() {
@@ -58,20 +59,28 @@ public class Module extends SubsystemBase {
         Logger.getInstance().recordOutput("Module/" + io.getConfig().getName() + "/optimized state speed",
                 state.speedMetersPerSecond);
 
-        // Calculate the drive output from the drive PID controller.
-        final double driveOutput = m_drivePIDController.calculate(inputs.wheelVelocityMetersPerSec,
+        // // Calculate the drive output from the drive PID controller.
+        // final double driveOutput =
+        // m_drivePIDController.calculate(inputs.wheelVelocityMetersPerSec,
+        // state.speedMetersPerSecond);
+
+        // final double driveFeedforward =
+        // m_driveFeedforward.calculate(state.speedMetersPerSecond);
+
+        // // Calculate the turning motor output from the turning PID controller.
+        // final double turnOutput =
+        // m_turningPIDController.calculate(inputs.azimuthEncoderPositionDeg,
+        // state.angle.getDegrees());
+
+        final double driveOutput = drivingController.calculate(inputs.wheelVelocityMetersPerSec,
                 state.speedMetersPerSecond);
-
-        final double driveFeedforward = m_driveFeedforward.calculate(state.speedMetersPerSecond);
-
-        // Calculate the turning motor output from the turning PID controller.
-        final double turnOutput = m_turningPIDController.calculate(inputs.azimuthEncoderPositionDeg,
+        final double turnOutput = azimuthController.calculate(inputs.azimuthEncoderPositionDeg,
                 state.angle.getDegrees());
 
         Logger.getInstance().recordOutput("Module/" + io.getConfig().getName() + "/state target",
                 state.angle.getDegrees());
 
-        double wheelVolts = MathUtil.clamp(driveOutput + driveFeedforward, -12, 12);
+        double wheelVolts = MathUtil.clamp(driveOutput, -12, 12);
         double azimuthVolts = MathUtil.clamp(turnOutput, -12, 12);
 
         Logger.getInstance().recordOutput("Module/" + io.getConfig().getName() + "/wheel volts", wheelVolts);

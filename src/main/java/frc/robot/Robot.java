@@ -20,12 +20,14 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.iPPSwerveControllerCommand;
 import frc.robot.subsystems.swerve.Swerve;
+import frc.robot.subsystems.swerve.SwerveIOPigeon2;
 import frc.robot.subsystems.swerve.SwerveIOSim;
 import frc.robot.subsystems.swerve.module.Module;
 import frc.robot.subsystems.swerve.module.ModuleContainer;
@@ -42,14 +44,25 @@ import frc.robot.subsystems.swerve.module.ModuleIOSim;
  */
 public class Robot extends LoggedRobot {
 
-  Swerve swerve;
+  public static final Swerve swerve = new Swerve(
+      Robot.isReal() ? new SwerveIOPigeon2() : new SwerveIOSim(),
+      ModuleContainer.builder()
+          .frontLeft(new Module(new ModuleIOSim(Constants.kFrontLeftModuleConfig)))
+          .frontRight(new Module(new ModuleIOSim(Constants.kFrontRightModuleConfig)))
+          .backLeft(new Module(new ModuleIOSim(Constants.kBackLeftModuleConfig)))
+          .backRight(new Module(new ModuleIOSim(Constants.kBackRightModuleConfig)))
+          .build());
 
   PIDController xController = new PIDController(1.6, 0, 0);
   PIDController yController = new PIDController(1.5, 0, 0);
-  ProfiledPIDController thetaController = new ProfiledPIDController(0, 0, 0,
-      new TrapezoidProfile.Constraints(Math.PI, Math.PI));
+  ProfiledPIDController thetaController = new ProfiledPIDController(4.75, 0, 0,
+      new TrapezoidProfile.Constraints(10 * Math.PI, 10 * Math.PI));
   HolonomicDriveController holonomicDriveController = new HolonomicDriveController(xController, yController,
       thetaController);
+
+  PIDController snapController = new PIDController(1, 0, 0);
+
+  public static final XboxController driver = new XboxController(0);
 
   Module module;
   Timer timer = new Timer();
@@ -96,15 +109,6 @@ public class Robot extends LoggedRobot {
 
     // module = new Module(new ModuleIOSim(Constants.kFrontLeftModuleConfig));
 
-    swerve = new Swerve(
-        new SwerveIOSim(),
-        ModuleContainer.builder()
-            .frontLeft(new Module(new ModuleIOSim(Constants.kFrontLeftModuleConfig)))
-            .frontRight(new Module(new ModuleIOSim(Constants.kFrontRightModuleConfig)))
-            .backLeft(new Module(new ModuleIOSim(Constants.kBackLeftModuleConfig)))
-            .backRight(new Module(new ModuleIOSim(Constants.kBackRightModuleConfig)))
-            .build());
-
     // System.out.println(trajectory.getTotalTimeSeconds());
   }
 
@@ -137,7 +141,7 @@ public class Robot extends LoggedRobot {
       m_autonomousCommand.cancel();
     }
 
-    swerve.drive(0, 0, 0);
+    // swerve.drive(0, 0, 0);
   }
 
   @Override
@@ -166,14 +170,16 @@ public class Robot extends LoggedRobot {
     // }
     // }, swerve);
 
-    var t = PathPlanner.loadPath("Test", 4.87, 4.5);
-    swerve.setPose(t.getInitialPose());
+    // var t = PathPlanner.loadPath("Test", 4.87, 4.5);
+    // swerve.setPose(t.getInitialPose());
 
-    m_autonomousCommand = new iPPSwerveControllerCommand(
-        t, () -> swerve.getPose(), swerve.getKinematics(), xController, yController,
-        thetaController, (states) -> {
-          swerve.setStates(states);
-        }, swerve).andThen(() -> swerve.drive(0, 0, 0));
+    // m_autonomousCommand = new iPPSwerveControllerCommand(
+    // t, () -> swerve.getPose(), Constants.kKinematics, xController, yController,
+    // thetaController, (states) -> {
+    // swerve.setStates(states);
+    // }, swerve);
+
+    swerve.followTrajectory(PathPlanner.loadPath("Test", PathPlanner.getConstraintsFromPath("Test")));
 
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
@@ -196,13 +202,26 @@ public class Robot extends LoggedRobot {
       m_autonomousCommand.cancel();
     }
 
-    swerve.drive(0, 0, 0);
+    // swerve.drive(0, 0, 0);
     // module.setDesiredState(new SwerveModuleState(3, Rotation2d.fromDegrees(45)));
   }
 
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
+
+    if (driver.getPOV() == 45) {
+      snapController.setSetpoint(45);
+    }
+
+    if (driver.getPOV() != -1) {
+      // swerve.drive(driver.getLeftX(), driver.getLeftY(),
+      // snapController.calculate(swerve.getPose().getRotation().getDegrees()));
+    } else {
+      // swerve.drive(driver.getLeftX(), driver.getLeftY(),
+      // driver.getRightTriggerAxis());
+    }
+
   }
 
   @Override
