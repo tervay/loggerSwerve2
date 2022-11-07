@@ -51,6 +51,7 @@ public class ModuleIOSim implements ModuleIO {
         inputs.wheelCurrentAmps = wheelSim.getCurrentDrawAmps();
         inputs.azimuthCurrentAmps = azimuthSim.getCurrentDrawAmps();
     }
+    
 
     @Override
     public void setWheelVolts(double volts) {
