@@ -1,7 +1,10 @@
+import java.time.LocalDateTime
+
 plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2022.4.1"
     id "io.freefair.lombok" version "6.4.3"
+    id 'org.ajoberstar.grgit' version "5.0.0"
 }
 
 sourceSets {
@@ -111,3 +114,12 @@ jar {
 deployArtifact.jarTask = jar
 wpi.java.configureExecutableTasks(jar)
 wpi.java.configureTestTasks(test)
+
+task commitOnDeploy {
+    description = 'Commits when deployed.'
+    doLast {
+        def dt = LocalDateTime.now()
+        grgit.add(patterns: ['src/'])
+        grgit.commit(message: dt, all: true)
+    }
+}
